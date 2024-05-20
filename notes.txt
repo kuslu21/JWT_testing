@@ -1,0 +1,46 @@
+Autentizace -> ziskam username, password a zjistim, jestli jsou spravne 
+            -> napr. prihlaseni uzivatele            
+Autorizace  -> kontroluje, jestli uzivatel ktery dela pozadavky na server je opravdu ten, ktery se 
+               dostal pres autentizaci a ma mit pristup k nejakemu systemu
+            -> napr. session ID
+
+
+Priklad bez JWT:
+client -> odesle prihlasovaci udaje uzivatele (POST { email, password })
+server -> zkontroluje platnost prihlasovacich udaju (jestli koresponduje s daty v pameti serveru)
+server -> ulozi si clienta do Session memory
+server -> vrati clientovi unikatni Session ID jako Cookie
+client -> odesle nejaky pozadavek s Session ID Cookie
+server -> zkontroluje platnost Session ID Cookie (jestli koresponduje se Session memory)
+server -> vrati data
+
+Priklad s JWT:
+client -> odesle prihlasovaci udaje uzivatele (POST { email, password })
+server -> zkontroluje platnost prihlasovacich udaju (jestli koresponduje s daty v pameti serveru)
+server -> vytvori JWT pro clienta 
+server -> enkoduje, serializuje a podepise JWT svym vlastim secret ktery
+server -> vrati clientovi unikatni JWT token (podepsany, takze server pozna, kdyz s nim client manipuluje)
+client -> ulozi si JWT do napr. Cookies
+client -> odesle nejaky pozadavek s JWT 
+server -> zkontroluje ze od doby vytvoreni JWT s nim client nemanipuloval
+server -> deserializuje, informace uz jsou v JWT, takze vi co ma delat
+
+
+- Hlavni rozdil je, ze server o clientovi nic neuklada, data o nem jsou totiz v JWT tokenu.
+- JWT je skvely pro vyuziti pro vice serveru, protoze jeden server muze mit jiny session nez jiny, coz muze 
+vytvaret problemy
+
+
+
+- JWT se sklada ze 3 casti:
+    1. Header 
+    2. Payload
+    3. Signature
+
+    - Header -> obsahuje informace o typu tokenu a typu algoritmu, ktery byl pouzit pro podepsani tokenu
+    - Payload -> obsahuje data, ktera chceme poslat
+    - Signature -> obsahuje podepsany token, ktery je vytvoren z Header a Payload
+
+- JWT je podepsany, takze server vi, kdyz s nim client manipuluje. Pokud by se nekdo pokousel zmenit 
+  nejake informace v JWT, tak by se zmenil i podpis a server by to poznal a odmitl takovy request.
+- Taky nemusi pokazde hledat v Session ID a sva data ma client u sebe, takze je to rychlejsi a efektivnejsi
